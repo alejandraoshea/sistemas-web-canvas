@@ -21,14 +21,13 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let squareSize = 60; // tamaño de cada cuadrito del picnic
+let squareSize = 60; 
 const backgroundColors = ['#aac5d1', '#bbcdd5', '#dbe5ea'];
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  // recalcular el tamaño de los cuadros proporcional al ancho de pantalla
   squareSize = Math.floor(Math.min(canvas.width, canvas.height) / 10);
 }
 window.addEventListener('resize', resizeCanvas);
@@ -59,13 +58,12 @@ let keys = {};
 let lastTime = 0;
 let score = 0;
 
-// Esperar a que ambas imágenes carguen
 let imagesLoaded = 0;
 [player.img, trophy.img].forEach(img => {
   img.onload = () => {
     imagesLoaded++;
     if (imagesLoaded === 2) {
-      // Ajustar tamaño proporcional al cuadro
+
       player.width = squareSize * 1.2;
       player.height = squareSize * 0.6;
 
@@ -77,7 +75,6 @@ let imagesLoaded = 0;
   }
 });
 
-// Input
 window.addEventListener('keydown', e => keys[e.key] = true);
 window.addEventListener('keyup', e => keys[e.key] = false);
 
@@ -87,11 +84,9 @@ function update(deltaTime) {
   if (keys['ArrowLeft']) player.x -= player.speed * deltaTime;
   if (keys['ArrowRight']) player.x += player.speed * deltaTime;
 
-  // Limitar dentro del canvas
   player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
   player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
 
-  // Colisión
   if (player.x < trophy.x + trophy.width &&
       player.x + player.width > trophy.x &&
       player.y < trophy.y + trophy.height &&
