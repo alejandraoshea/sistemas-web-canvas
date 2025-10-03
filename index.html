@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>F1 Picnic Game</title>
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  canvas { 
+    display: block; 
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let squareSize = 60; // tamaño de cada cuadrito del picnic
+const backgroundColors = ['#aac5d1', '#bbcdd5', '#dbe5ea'];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // recalcular el tamaño de los cuadros proporcional al ancho de pantalla
+  squareSize = Math.floor(Math.min(canvas.width, canvas.height) / 10);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Jugador (auto F1)
+const player = {
+  x: 50,
+  y: 50,
+  speed: 300,
+  img: new Image(),
+  width: 0,
+  height: 0
+};
+player.img.src = 'f1helmet.png';
+
+// Trofeo
+const trophy = {
+  x: Math.random() * 500,
+  y: Math.random() * 400,
+  img: new Image(),
+  width: 0,
+  height: 0
+};
+trophy.img.src = 'trophy.png';
+
+let keys = {};
+let lastTime = 0;
+let score = 0;
+
+// Esperar a que ambas imágenes carguen
+let imagesLoaded = 0;
+[player.img, trophy.img].forEach(img => {
+  img.onload = () => {
+    imagesLoaded++;
+    if (imagesLoaded === 2) {
+      // Ajustar tamaño proporcional al cuadro
+      player.width = squareSize * 1.2;
+      player.height = squareSize * 0.6;
+
+      trophy.width = squareSize * 0.8;
+      trophy.height = squareSize * 0.8;
+
+      requestAnimationFrame(gameLoop);
+    }
+  }
+});
+
+// Input
+window.addEventListener('keydown', e => keys[e.key] = true);
+window.addEventListener('keyup', e => keys[e.key] = false);
+
+function update(deltaTime) {
+  if (keys['ArrowUp']) player.y -= player.speed * deltaTime;
+  if (keys['ArrowDown']) player.y += player.speed * deltaTime;
+  if (keys['ArrowLeft']) player.x -= player.speed * deltaTime;
+  if (keys['ArrowRight']) player.x += player.speed * deltaTime;
+
+  // Limitar dentro del canvas
+  player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+  player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
+
+  // Colisión
+  if (player.x < trophy.x + trophy.width &&
+      player.x + player.width > trophy.x &&
+      player.y < trophy.y + trophy.height &&
+      player.y + player.height > trophy.y) {
+    score++;
+    trophy.x = Math.random() * (canvas.width - trophy.width);
+    trophy.y = Math.random() * (canvas.height - trophy.height);
+  }
+}
+
+function drawBackground() {
+  for (let y = 0; y < canvas.height; y += squareSize) {
+    for (let x = 0; x < canvas.width; x += squareSize) {
+      const colorIndex = (Math.floor(x/squareSize) + Math.floor(y/squareSize)) % backgroundColors.length;
+      ctx.fillStyle = backgroundColors[colorIndex];
+      ctx.fillRect(x, y, squareSize, squareSize);
+    }
+  }
+}
+
+function draw() {
+  drawBackground();
+  ctx.drawImage(player.img, player.x, player.y, player.width, player.height);
+  ctx.drawImage(trophy.img, trophy.x, trophy.y, trophy.width, trophy.height);
+
+  ctx.fillStyle = 'black';
+  ctx.font = '30px Arial';
+  ctx.fillText('Trophies: ' + score, 20, 40);
+}
+
+function gameLoop(timestamp) {
+  let deltaTime = (timestamp - lastTime) / 1000;
+  lastTime = timestamp;
+
+  update(deltaTime);
+  draw();
+
+  requestAnimationFrame(gameLoop);
+}
+</script>
+</body>
+</html>
